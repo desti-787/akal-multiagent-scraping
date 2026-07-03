@@ -1,6 +1,6 @@
 # Base
 python-dotenv==1.0.1
-requests==2.32.3
+requests==2.33.0
 
 # Base de données / géospatial
 psycopg[binary]==3.2.10
