@@ -1,0 +1,14 @@
+# Base
+python-dotenv==1.0.1
+requests==2.32.3
+
+# Base de données / géospatial
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.35
+GeoAlchemy2==0.15.2
+
+# Traitement de données
+pandas==2.2.3
+
+# Tests
+pytest==8.3.3

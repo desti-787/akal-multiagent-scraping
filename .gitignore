@@ -1,0 +1,27 @@
+# Environnement Python
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Variables d'environnement (jamais commit les clés API)
+.env
+
+# Docker
+docker/postgres_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Données de test / sorties locales
+data/
+output/
