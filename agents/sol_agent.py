@@ -15,6 +15,7 @@ from typing import Optional
 import requests
 
 from config.schemas import SolData, TextureData
+from agents.utils import validate_coordinates
 
 SOILGRIDS_URL = "https://rest.isric.org/soilgrids/v2.0/properties/query"
 
@@ -31,13 +32,6 @@ CONVERSION_FACTORS = {
 
 class SolAgentError(Exception):
     """Levée quand l'agent Sol échoue après épuisement de ses tentatives."""
-
-
-def _validate_coordinates(lat: float, lon: float) -> None:
-    if not (-90 <= lat <= 90):
-        raise ValueError(f"Latitude invalide : {lat} (doit être entre -90 et 90)")
-    if not (-180 <= lon <= 180):
-        raise ValueError(f"Longitude invalide : {lon} (doit être entre -180 et 180)")
 
 
 def _fetch_soilgrids(lat: float, lon: float, timeout: int) -> dict:
@@ -81,7 +75,7 @@ def get_sol_data(lat: float, lon: float, max_retries: int = 3, timeout: int = 10
     Lève ValueError immédiatement si les coordonnées sont invalides (pas de retry,
     ça ne sert à rien de réessayer une coordonnée impossible).
     """
-    _validate_coordinates(lat, lon)
+    validate_coordinates(lat, lon)
 
     last_error: Optional[Exception] = None
     for attempt in range(1, max_retries + 1):
