@@ -11,6 +11,7 @@ pydantic>=2.10
 pandas==2.2.3
 tifffile>=2024.1
 imagecodecs>=2024.1
+beautifulsoup4>=4.12
 
 # Tests
 pytest==8.3.3
