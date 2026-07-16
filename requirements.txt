@@ -13,5 +13,9 @@ tifffile>=2024.1
 imagecodecs>=2024.1
 beautifulsoup4>=4.12
 
+# API / Dashboard
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
 # Tests
 pytest==8.3.3
