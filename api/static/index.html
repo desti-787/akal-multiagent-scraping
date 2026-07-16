@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AKAL — Dashboard Multi-Agent</title>
+<style>
+  :root {
+    --vert: #2E7D32;
+    --vert-clair: #E8F1E8;
+    --navy: #1F3B57;
+    --grey: #666;
+    --bg: #F7F8FA;
+    --carte: #FFFFFF;
+    --ombre: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    margin: 0;
+    color: #222;
+  }
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  header p { margin: 4px 0 0; color: #b8c6d4; font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .panneau {
+    background: var(--carte);
+    border-radius: 12px;
+    box-shadow: var(--ombre);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .panneau h2 {
+    margin-top: 0;
+    font-size: 18px;
+    color: var(--navy);
+    border-bottom: 2px solid var(--vert-clair);
+    padding-bottom: 10px;
+  }
+  .form-ligne {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  input[type=number], input[type=text] {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 130px;
+  }
+  label { font-size: 13px; color: var(--grey); }
+  button {
+    background: var(--vert);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button:hover { background: #256428; }
+  button:disabled { background: #aaa; cursor: not-allowed; }
+
+  .cartes-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .carte-agent {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 16px;
+    background: #FCFCFC;
+  }
+  .carte-agent.echec { opacity: 0.5; }
+  .carte-agent .nom {
+    font-weight: 700;
+    color: var(--vert);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .carte-agent .valeur { font-size: 14px; margin: 3px 0; }
+  .carte-agent .valeur b { color: var(--navy); }
+
+  .annonces-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 18px;
+  }
+  .carte-annonce {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #FCFCFC;
+  }
+  .carte-annonce img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: #eee;
+  }
+  .carte-annonce .contenu { padding: 12px; }
+  .carte-annonce .titre {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--navy);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .carte-annonce .prix { color: var(--vert); font-weight: 700; font-size: 15px; }
+  .carte-annonce .details { font-size: 12px; color: var(--grey); margin-top: 4px; }
+  .carte-annonce a { text-decoration: none; }
+  .tag {
+    display: inline-block;
+    background: var(--vert-clair);
+    color: var(--vert);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 6px;
+  }
+
+  .chargement { color: var(--grey); font-style: italic; font-size: 14px; }
+  .erreur { color: #B00020; font-size: 14px; }
+  .json-brut {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    overflow-x: auto;
+    margin-top: 14px;
+    display: none;
+  }
+  .lien-json {
+    font-size: 12px;
+    color: var(--grey);
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 10px;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 AKAL — Dashboard Multi-Agent</h1>
+  <p>Système multi-agent de data scraping et d'enrichissement géospatial</p>
+</header>
+
+<main>
+
+  <!-- ENRICHISSEMENT GÉOSPATIAL -->
+  <section class="panneau">
+    <h2>Enrichissement d'une parcelle (5 agents)</h2>
+    <div class="form-ligne">
+      <div>
+        <label>Latitude</label><br>
+        <input type="number" id="lat" value="34.05" step="0.0001">
+      </div>
+      <div>
+        <label>Longitude</label><br>
+        <input type="number" id="lon" value="-5.60" step="0.0001">
+      </div>
+      <button id="btn-enrichir" onclick="lancerEnrichissement()">Enrichir la parcelle</button>
+    </div>
+    <div id="enrichir-status"></div>
+    <div id="enrichir-resultats" class="cartes-grille"></div>
+    <span class="lien-json" id="toggle-json" onclick="toggleJson()" style="display:none;">Voir le JSON brut</span>
+    <pre class="json-brut" id="enrichir-json"></pre>
+  </section>
+
+  <!-- SCRAPER AVITO -->
+  <section class="panneau">
+    <h2>Scraper Avito — Terrains agricoles</h2>
+    <div class="form-ligne">
+      <div>
+        <label>Pages à parcourir</label><br>
+        <input type="number" id="max-pages" value="1" min="1" max="5">
+      </div>
+      <div style="align-self:flex-end;">
+        <label><input type="checkbox" id="telecharger-images"> Télécharger les images en local</label>
+      </div>
+      <button id="btn-scraper" onclick="lancerScraper()">Lancer le scraping</button>
+    </div>
+    <div id="scraper-status"></div>
+    <div id="scraper-export" style="display:none; margin-top:10px;"></div>
+    <div id="scraper-resultats" class="annonces-grille"></div>
+  </section>
+
+</main>
+
+<script>
+const API_BASE = window.location.origin;
+
+async function lancerEnrichissement() {
+  const lat = document.getElementById('lat').value;
+  const lon = document.getElementById('lon').value;
+  const bouton = document.getElementById('btn-enrichir');
+  const status = document.getElementById('enrichir-status');
+  const resultats = document.getElementById('enrichir-resultats');
+  const toggle = document.getElementById('toggle-json');
+
+  bouton.disabled = true;
+  status.innerHTML = '<p class="chargement">⏳ Interrogation des 5 agents en parallèle (10-15s)...</p>';
+  resultats.innerHTML = '';
+  toggle.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/enrichir?lat=${lat}&lon=${lon}`);
+    if (!res.ok) throw new Error(`Erreur API (${res.status})`);
+    const data = await res.json();
+
+    status.innerHTML = '';
+    resultats.innerHTML = '';
+
+    const agents = [
+      { cle: 'sol', nom: '🌱 Sol', champs: v => `<div class="valeur">pH : <b>${v.ph ?? '—'}</b></div><div class="valeur">Carbone organique : <b>${v.carbone_organique_g_kg ?? '—'}</b> g/kg</div>` },
+      { cle: 'climat', nom: '☀️ Climat', champs: v => `<div class="valeur">Précipitations : <b>${v.precip_annuelle_mm ?? '—'}</b> mm/an</div><div class="valeur">Température : <b>${v.temp_moyenne_c ?? '—'}</b> °C</div>` },
+      { cle: 'ndvi', nom: '🛰️ NDVI', champs: v => `<div class="valeur">Valeur moyenne : <b>${v.valeur_moyenne ?? '—'}</b></div><div class="valeur">Image du : <b>${v.date_image ?? '—'}</b></div>` },
+      { cle: 'topographie', nom: '⛰️ Topographie', champs: v => `<div class="valeur">Altitude : <b>${v.altitude_m ?? '—'}</b> m</div><div class="valeur">Pente : <b>${v.pente_pct ?? '—'}</b> %</div>` },
+      { cle: 'accessibilite', nom: '🛣️ Accessibilité', champs: v => `<div class="valeur">Route : <b>${v.distance_route_km ?? '—'}</b> km</div><div class="valeur">Ville : <b>${v.distance_ville_km ?? '—'}</b> km</div>` },
+    ];
+
+    agents.forEach(agent => {
+      const valeur = data[agent.cle];
+      const div = document.createElement('div');
+      div.className = 'carte-agent' + (valeur ? '' : ' echec');
+      div.innerHTML = `<div class="nom">${agent.nom}</div>` + (valeur ? agent.champs(valeur) : '<div class="valeur">❌ Non disponible</div>');
+      resultats.appendChild(div);
+    });
+
+    document.getElementById('enrichir-json').textContent = JSON.stringify(data, null, 2);
+    toggle.style.display = 'inline-block';
+
+  } catch (e) {
+    status.innerHTML = `<p class="erreur">❌ ${e.message}</p>`;
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+function toggleJson() {
+  const pre = document.getElementById('enrichir-json');
+  pre.style.display = pre.style.display === 'block' ? 'none' : 'block';
+}
+
+async function lancerScraper() {
+  const maxPages = document.getElementById('max-pages').value;
+  const telechargerImages = document.getElementById('telecharger-images').checked;
+  const bouton = document.getElementById('btn-scraper');
+  const status = document.getElementById('scraper-status');
+  const resultats = document.getElementById('scraper-resultats');
+
+  bouton.disabled = true;
+  status.innerHTML = '<p class="chargement">⏳ Scraping en cours (peut prendre 1-2 min selon le nombre de pages)...</p>';
+  resultats.innerHTML = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/scraper?max_pages=${maxPages}&telecharger_images=${telechargerImages}`);
+    if (!res.ok) throw new Error(`Erreur API (${res.status})`);
+    const data = await res.json();
+
+    status.innerHTML = `<p>✅ ${data.count} annonce(s) trouvée(s)</p>`;
+    resultats.innerHTML = '';
+
+    const exportDiv = document.getElementById('scraper-export');
+    if (data.fichier_export) {
+      exportDiv.style.display = 'block';
+      exportDiv.innerHTML = `<a href="${API_BASE}/api/scraper/export/${data.fichier_export}" download>
+        <button type="button">📥 Télécharger le JSON complet (${data.fichier_export})</button>
+      </a>`;
+    }
+
+    data.annonces.forEach(a => {
+      const img = a.images && a.images.length > 0 ? a.images[0] : '';
+      const carte = document.createElement('div');
+      carte.className = 'carte-annonce';
+      carte.innerHTML = `
+        <a href="${a.url}" target="_blank">
+          ${img ? `<img src="${img}" loading="lazy">` : '<div style="height:150px;background:#eee;"></div>'}
+          <div class="contenu">
+            <div class="titre">${a.titre ?? 'Sans titre'}</div>
+            <div class="prix">${a.prix_dh ? a.prix_dh.toLocaleString('fr-FR') + ' DH' : 'Prix non spécifié'}</div>
+            <div class="details">${a.surface_m2 ? a.surface_m2.toLocaleString('fr-FR') + ' m²' : ''}</div>
+            ${a.categorie ? `<span class="tag">${a.categorie}</span>` : ''}
+            ${a.titre_foncier ? `<span class="tag">Titré</span>` : ''}
+          </div>
+        </a>
+      `;
+      resultats.appendChild(carte);
+    });
+
+  } catch (e) {
+    status.innerHTML = `<p class="erreur">❌ ${e.message}</p>`;
+  } finally {
+    bouton.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
